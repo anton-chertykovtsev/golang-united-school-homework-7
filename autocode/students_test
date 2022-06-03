@@ -36,7 +36,7 @@ var twin01 Person = Person{"Ann", "Doe", time.Date(2000, time.March, 5, 5, 10, 0
 var twin02 Person = Person{"Bob", "Doe", time.Date(2000, time.March, 5, 5, 10, 0, 0, time.Local)}
 var onedaychild Person = Person{"Bob", "Roe", time.Date(2000, time.March, 5, 5, 10, 0, 0, time.Local)}
 
-func TestPeople_Len(t *testing.T) {
+func TestPeopleLen(t *testing.T) {
 	var ppl People = People{husband, wife}
 	var expect int = 2
 	r := ppl.Len()
@@ -45,37 +45,37 @@ func TestPeople_Len(t *testing.T) {
 	}
 }
 
-func TestPeople_LessByBirthDay(t *testing.T) {
-	var ppl People = People{husband, wife}
-	var a, b int = 0, 1
-	var expect bool = true
-	r := ppl.Less(a, b)
-	if r {
-		t.Errorf(errorExpectedValue(expect, r))
-	}
+func TestPeopleLess(t *testing.T) {
+	t.Run("ByBirthDay", func (t *testing.T) {
+		var ppl People = People{husband, wife}
+		var a, b int = 0, 1
+		var expect bool = true
+		r := ppl.Less(a, b)
+		if r {
+			t.Errorf(errorExpectedValue(expect, r))
+		}
+	})
+	t.Run("ByFirstName", func (t *testing.T) {
+		var ppl People = People{twin01, twin02, onedaychild}
+		var a, b int = 0, 1
+		var expect bool = false
+		r := ppl.Less(a, b)
+		if !r {
+			t.Errorf(errorExpectedValue(expect, r))
+		}	
+	})
+	t.Run("ByLastName", func (t *testing.T) {
+		var ppl People = People{twin01, twin02, onedaychild}
+		var a, b int = 1, 2
+		var expect bool = false
+		r := ppl.Less(a, b)
+		if !r {
+			t.Errorf(errorExpectedValue(expect, r))
+		}
+	})
 }
 
-func TestPeople_LessByFirstName(t *testing.T) {
-	var ppl People = People{twin01, twin02, onedaychild}
-	var a, b int = 0, 1
-	var expect bool = false
-	r := ppl.Less(a, b)
-	if !r {
-		t.Errorf(errorExpectedValue(expect, r))
-	}
-}
-
-func TestPeople_LessByLastName(t *testing.T) {
-	var ppl People = People{twin01, twin02, onedaychild}
-	var a, b int = 1, 2
-	var expect bool = false
-	r := ppl.Less(a, b)
-	if !r {
-		t.Errorf(errorExpectedValue(expect, r))
-	}
-}
-
-func TestPeople_Swap(t *testing.T) {
+func TestPeopleSwap(t *testing.T) {
 	var ppl People = People{twin01, twin02}
 	var expect People = People{twin02, twin01}
 	var i, j int = 0, 1
@@ -85,41 +85,40 @@ func TestPeople_Swap(t *testing.T) {
 			t.Errorf(errorExpectedValue(expect, ppl))
 		}
 	}
-
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 var str string = "1 2 3\n4 5 6\n7 8 9"
 
-func TestMatrix_NewGoodMatrix(t *testing.T) {
-	var expect Matrix = Matrix{3, 3, []int{1, 2, 3, 4, 5, 6, 7, 8, 9}}
-	var r, err = New(str)
-	if err != nil {
-		t.Errorf(errorExpectedValue(nil, err))
-	}
-	if !reflect.DeepEqual(*r, expect) {
-		t.Errorf(errorExpectedValue(expect, *r))
-	}
+func TestMatrixNew(t *testing.T) {
+	t.Run("GoodMatrix", func (t *testing.T) {
+		var expect Matrix = Matrix{3, 3, []int{1, 2, 3, 4, 5, 6, 7, 8, 9}}
+		var r, err = New(str)
+		if err != nil {
+			t.Errorf(errorExpectedValue(nil, err))
+		}
+		if !reflect.DeepEqual(*r, expect) {
+			t.Errorf(errorExpectedValue(expect, *r))
+		}
+	})
+	t.Run("BadColunsLength", func (t *testing.T) {
+		var str string = "1 2 3 5\n4 5 \n6 7 8 9 10"
+		var _, err = New(str)
+		if err == nil {
+			t.Errorf(errorExpectedValue(err, nil))
+		}
+	})
+	t.Run("BadContent", func (t *testing.T) {
+		var str string = "1 2 3\n4 a 6\n7 8 9"
+		var _, err = New(str)
+		if err == nil {
+			t.Errorf(errorExpectedValue(err, nil))
+		}
+	})
 }
 
-func TestMatrix_NewBadColunsLength(t *testing.T) {
-	var str string = "1 2 3 5\n4 5 \n6 7 8 9 10"
-	var _, err = New(str)
-	if err == nil {
-		t.Errorf(errorExpectedValue(err, nil))
-	}
-}
-
-func TestMatrix_NewBadContent(t *testing.T) {
-	var str string = "1 2 3\n4 a 6\n7 8 9"
-	var _, err = New(str)
-	if err == nil {
-		t.Errorf(errorExpectedValue(err, nil))
-	}
-}
-
-func TestMatrix_Rows(t *testing.T) {
+func TestMatrixRows(t *testing.T) {
 	var expect [][]int = [][]int{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}
 	var m, err = New(str)
 	if err != nil {
@@ -130,7 +129,7 @@ func TestMatrix_Rows(t *testing.T) {
 	}
 }
 
-func TestMatrix_Cols(t *testing.T) {
+func TestMatrixCols(t *testing.T) {
 	var expect [][]int = [][]int{{1, 4, 7}, {2, 5, 8}, {3, 6, 9}}
 	var m, err = New(str)
 	if err != nil {
@@ -141,7 +140,7 @@ func TestMatrix_Cols(t *testing.T) {
 	}
 }
 
-func TestMatrix_Set(t *testing.T) {
+func TestMatrixSet(t *testing.T) {
 	var tests = []struct {
 		r, c, v int
 		want bool
