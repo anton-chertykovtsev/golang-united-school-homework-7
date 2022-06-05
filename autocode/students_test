@@ -3,9 +3,10 @@ package coverage
 import (
 	"fmt"
 	"os"
-	"reflect"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // DO NOT EDIT THIS FUNCTION
@@ -37,106 +38,76 @@ var twin02 Person = Person{"Bob", "Doe", time.Date(2000, time.March, 5, 5, 10, 0
 var onedaychild Person = Person{"Bob", "Roe", time.Date(2000, time.March, 5, 5, 10, 0, 0, time.Local)}
 
 func TestPeopleLen(t *testing.T) {
-	var ppl People = People{husband, wife}
 	var expect int = 2
-	r := ppl.Len()
-	if r != expect {
-		t.Errorf(errorExpectedValue(expect, r))
-	}
+	t.Run("Equal", func(t *testing.T) {
+		var ppl People = People{husband, wife}
+		assert.Equal(t, expect, ppl.Len())
+	})
+	t.Run("NotEqual", func(t *testing.T) {
+		var ppl People = People{husband, wife, twin01}
+		assert.NotEqual(t, expect, ppl.Len())
+	})
 }
 
 func TestPeopleLess(t *testing.T) {
 	t.Run("ByBirthDay", func (t *testing.T) {
 		var ppl People = People{husband, wife}
-		var a, b int = 0, 1
-		var expect bool = true
-		r := ppl.Less(a, b)
-		if r {
-			t.Errorf(errorExpectedValue(expect, r))
-		}
+		assert.False(t, ppl.Less(0, 1))
 	})
 	t.Run("ByFirstName", func (t *testing.T) {
 		var ppl People = People{twin01, twin02, onedaychild}
-		var a, b int = 0, 1
-		var expect bool = false
-		r := ppl.Less(a, b)
-		if !r {
-			t.Errorf(errorExpectedValue(expect, r))
-		}	
+		assert.True(t, ppl.Less(0, 1))
 	})
 	t.Run("ByLastName", func (t *testing.T) {
 		var ppl People = People{twin01, twin02, onedaychild}
-		var a, b int = 1, 2
-		var expect bool = false
-		r := ppl.Less(a, b)
-		if !r {
-			t.Errorf(errorExpectedValue(expect, r))
-		}
+		assert.True(t, ppl.Less(1, 2))
 	})
 }
 
 func TestPeopleSwap(t *testing.T) {
-	var ppl People = People{twin01, twin02}
-	var expect People = People{twin02, twin01}
-	var i, j int = 0, 1
-	ppl.Swap(i, j)
-	for k, v := range ppl {
-		if v != expect[k] {
-			t.Errorf(errorExpectedValue(expect, ppl))
-		}
-	}
+	var ppl People = People{twin01, twin02, onedaychild}
+	var expect People = People{twin02, twin01, onedaychild}
+	ppl.Swap(0, 1)
+	assert.Equal(t, expect, ppl)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-var str string = "1 2 3\n4 5 6\n7 8 9"
+var strGood string = "1 2 3\n4 5 6\n7 8 9"
+var strBadCols string = "1 2 3 5\n4 5 \n6 7 8 9 10"
+var strBadContent string = "1 2 3\n4 a 6\n7 8 9"
 
 func TestMatrixNew(t *testing.T) {
 	t.Run("GoodMatrix", func (t *testing.T) {
 		var expect Matrix = Matrix{3, 3, []int{1, 2, 3, 4, 5, 6, 7, 8, 9}}
-		var r, err = New(str)
-		if err != nil {
-			t.Errorf(errorExpectedValue(nil, err))
-		}
-		if !reflect.DeepEqual(*r, expect) {
-			t.Errorf(errorExpectedValue(expect, *r))
+		var r, err = New(strGood)
+		if assert.NoError(t ,err) {
+			assert.Equal(t, expect, *r)
 		}
 	})
-	t.Run("BadColunsLength", func (t *testing.T) {
-		var str string = "1 2 3 5\n4 5 \n6 7 8 9 10"
-		var _, err = New(str)
-		if err == nil {
-			t.Errorf(errorExpectedValue(err, nil))
-		}
+	t.Run("BadLengthColums", func (t *testing.T) {
+		var _, err = New(strBadCols)
+		assert.Error(t ,err)
 	})
 	t.Run("BadContent", func (t *testing.T) {
-		var str string = "1 2 3\n4 a 6\n7 8 9"
-		var _, err = New(str)
-		if err == nil {
-			t.Errorf(errorExpectedValue(err, nil))
-		}
+		var _, err = New(strBadContent)
+		assert.Error(t ,err)
 	})
 }
 
 func TestMatrixRows(t *testing.T) {
 	var expect [][]int = [][]int{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}
-	var m, err = New(str)
-	if err != nil {
-		t.Errorf(errorUnexpected(err))
-	}
-	if !reflect.DeepEqual(m.Rows(), expect) {
-		t.Errorf(errorExpectedValue(expect, m.Rows()))
+	var m, err = New(strGood)
+	if assert.NoError(t, err) {
+		assert.Equal(t, expect, m.Rows())
 	}
 }
 
 func TestMatrixCols(t *testing.T) {
 	var expect [][]int = [][]int{{1, 4, 7}, {2, 5, 8}, {3, 6, 9}}
-	var m, err = New(str)
-	if err != nil {
-		t.Errorf(errorUnexpected(err))
-	}
-	if !reflect.DeepEqual(m.Cols(), expect) {
-		t.Errorf(errorExpectedValue(expect, m.Rows()))
+	var m, err = New(strGood)
+	if assert.NoError(t, err) {
+		assert.Equal(t, expect, m.Cols())
 	}
 }
 
@@ -151,18 +122,10 @@ func TestMatrixSet(t *testing.T) {
 		{5, 1, 10, false},
 		{1, 10, 10, false},
 	}
-	var responce bool
-	var m, err = New(str)
-	if err != nil {
-		t.Errorf(errorUnexpected(err))
-	}
-	for _, test := range tests {
-		tName := fmt.Sprintf("r:%d,c:%d,v:%d,w:%t",test.r,test.c,test.v,test.want)
-		t.Run(tName, func (t *testing.T) {
-			responce = m.Set(test.r, test.c, test.v)
-			if  responce != test.want {
-				t.Errorf(errorExpectedValue(test.want, responce))
-			}
-		})
-	}
+	var m, err = New(strGood)
+	if assert.NoError(t, err) {
+		for _, test := range tests {
+			assert.Equal(t, m.Set(test.r, test.c, test.v), test.want)
+		}
+	} 
 }
