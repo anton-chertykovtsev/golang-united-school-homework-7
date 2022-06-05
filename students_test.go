@@ -1,7 +1,6 @@
 package coverage
 
 import (
-	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -22,14 +21,6 @@ func init() {
 }
 
 // WRITE YOUR CODE BELOW
-
-func errorExpectedValue(e interface{}, g interface{}) string {
-	return fmt.Sprintf("Expected %v, but got %v", e, g)
-}
-
-func errorUnexpected(e interface{}) string {
-	return fmt.Sprintf("Unexpected error: %v", e)
-}
 
 var husband Person = Person{"John", "Doe", time.Date(1970, time.January, 1, 1, 1, 0, 0, time.Local)}
 var wife Person = Person{"Jane", "Doe", time.Date(1973, time.March, 3, 3, 3, 0, 0, time.Local)}
